@@ -113,6 +113,37 @@ def main(
                                                       dev=True, line_ids=dev_indices,
                                                       kb=kb, labels_discard=labels_discard)
 
+    # Start of my code
+    GET_DEV_DATA = False
+
+    if GET_DEV_DATA:
+        import json
+        from bin.wiki_entity_linking.wikipedia_processor import is_dev, is_valid_article
+        g = open("./dev_data_all.json", "w", buffering=8192000)
+
+        #output_dev_lines = []
+        with training_path.open("r", encoding="utf8", buffering=8192000) as file:
+            for i, line in enumerate(file):
+                if i in dev_indices:
+                    example = json.loads(line)
+                    article_id = example["article_id"]
+                    clean_text = example["clean_text"]
+
+                    if not is_dev(article_id) or not is_valid_article(clean_text):
+                        continue
+                    #output_dev_lines.append(line)
+                    g.write(line)
+                    if (i+1) % 1000 == 0:
+                       print(f"Wrote {i+1} lines")
+
+        g.close()
+
+    #    with open("./dev_data_all.json", "w") as g:
+    #       for output_dev_line in output_dev_lines:
+    #           g.write(output_dev_line)
+        import sys; sys.exit(0)
+    # End of my code
+
     measure_performance(dev_data, kb, el_pipe, baseline=True, context=False, dev_limit=len(dev_indices))
 
     for itn in range(epochs):
